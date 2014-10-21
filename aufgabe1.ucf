@@ -1,0 +1,33 @@
+#net clk50 period = 50 MHz ;
+
+NET "rst"       LOC = "L14" | IOSTANDARD = LVCMOS33;   # user reset button
+NET "clk"       LOC = "T9"  | IOSTANDARD = LVCMOS33;   # GCK0, master clock 50 MHz, fix wired!
+NET "btn0"      LOC = "M13" | IOSTANDARD = LVCMOS33;   # user push button
+NET "btn1"      LOC = "M14" | IOSTANDARD = LVCMOS33;   # user push button
+
+# Slider Switch Connections
+NET "sw<0>"     LOC = "F12" | IOSTANDARD = LVCMOS33;
+NET "sw<1>"     LOC = "G12" | IOSTANDARD = LVCMOS33;
+NET "sw<2>"     LOC = "H14" | IOSTANDARD = LVCMOS33;
+NET "sw<3>"     LOC = "H13" | IOSTANDARD = LVCMOS33;
+NET "sw<4>"     LOC = "J14" | IOSTANDARD = LVCMOS33;
+NET "sw<5>"     LOC = "J13" | IOSTANDARD = LVCMOS33;
+NET "sw<6>"     LOC = "K14" | IOSTANDARD = LVCMOS33;
+NET "sw<7>"     LOC = "K13" | IOSTANDARD = LVCMOS33;
+
+# Digit Enable (Anode Control) Signals (Active Low)
+NET "an<0>"     LOC = "D14" | IOSTANDARD = LVCMOS33;
+NET "an<1>"     LOC = "G14" | IOSTANDARD = LVCMOS33;
+NET "an<2>"     LOC = "F14" | IOSTANDARD = LVCMOS33;
+NET "an<3>"     LOC = "E13" | IOSTANDARD = LVCMOS33;
+
+# FPGA Connections to Seven-Segment Display (Active Low)
+NET "seg<7>"    LOC = "E14" | IOSTANDARD = LVCMOS33;
+NET "seg<6>"    LOC = "G13" | IOSTANDARD = LVCMOS33; 
+NET "seg<5>"    LOC = "N15" | IOSTANDARD = LVCMOS33;
+NET "seg<4>"    LOC = "P15" | IOSTANDARD = LVCMOS33;
+NET "seg<3>"    LOC = "R16" | IOSTANDARD = LVCMOS33;
+NET "seg<2>"    LOC = "F13" | IOSTANDARD = LVCMOS33;
+NET "seg<1>"    LOC = "N16" | IOSTANDARD = LVCMOS33;
+
+NET "dp"        LOC = "P16" | IOSTANDARD = LVCMOS33;  # decimal point
