@@ -16,12 +16,20 @@ ENTITY hex4x7seg IS
         seg:   OUT std_logic_vector( 7 DOWNTO 1));  -- 7 FPGA connections to seven-segment display, active low
 END hex4x7seg;
 
---ARCHITECTURE struktur OF hex4x7seg IS
+ARCHITECTURE struktur OF hex4x7seg IS
   -- hier sind benutzerdefinierte Konstanten und Signale einzutragen
-
---BEGIN
-
+  SIGNAL freqClk: std_logic := '0';
+  VARIABLE clkCount: std_logic_vector(13 DOWNTO 0);
+BEGIN
+   
    -- Modulo-2**14-Zaehler als Prozess
+   PROCESS(clk)
+   BEGIN
+      IF clk = '1' THEN
+         clkCount <= clkCount + 1;
+         freqClk <= NOT clkCount % 2^14;
+      END IF;
+   END PROCESS;
 
    
    -- Modulo-4-Zaehler als Prozess
@@ -40,4 +48,4 @@ END hex4x7seg;
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
 
 
---END struktur;
+END struktur;
