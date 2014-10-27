@@ -48,16 +48,18 @@ BEGIN
 	END PROCESS;
 
 	-- modulo-4-counter
-	PROCESS(modEnable, rst)
+	PROCESS(clk, modEnable, rst)
 	BEGIN
 		IF rst = RSTDEF THEN
 			modCount2 <= "00";
-		ELSIF rising_edge(modEnable) THEN
-			IF modCount2 = "11" THEN
-				modCount2 <= (OTHERS => '0');
-			ELSE
-				modCount2 <= modCount2 + 1;
-			END IF;
+		ELSIF rising_edge(clk) THEN
+            IF modEnable = '1' THEN
+                IF modCount2 = "11" THEN
+                    modCount2 <= (OTHERS => '0');
+                ELSE
+                    modCount2 <= modCount2 + 1;
+                END IF;
+            END IF;
 		END IF;
 	END PROCESS;
 
