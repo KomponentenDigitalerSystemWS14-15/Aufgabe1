@@ -45,7 +45,6 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-
 	-- Modulo-4-Zaehler als Prozess
 	PROCESS(modEnable, rst)
 	BEGIN
@@ -61,7 +60,17 @@ BEGIN
 	END PROCESS;
 
 	-- 1-aus-4-Dekoder als selektierte Signalzuweisung
-
+	PROCESS(modCount2)
+	BEGIN
+		an <= "1111"; -- default output value
+		CASE modCount2 IS
+			WHEN "00" => an(0) <= '0';
+			WHEN "01" => an(1) <= '0';
+			WHEN "10" => an(2) <= '0';
+			WHEN "11" => an(3) <= '0';
+			WHEN OTHERS => an <= "1111";
+		END CASE;
+	END PROCESS;
 
 	-- 1-aus-4-Multiplexer als selektierte Signalzuweisung
 

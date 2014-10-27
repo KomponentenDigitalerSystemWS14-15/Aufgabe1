@@ -1,4 +1,5 @@
 work/
 *.bit
 *.mpf
+*.bak
 transcript
