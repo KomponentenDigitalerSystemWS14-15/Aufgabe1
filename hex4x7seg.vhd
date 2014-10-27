@@ -28,7 +28,7 @@ BEGIN
 	PROCESS(clk, rst)
 	BEGIN
 		-- check for reset
-		IF rst = '1' THEN
+		IF rst = RSTDEF THEN
 			modCount14 <= "00000000000000";
 			modEnable <= '0';
 		ELSIF rising_edge(clk) THEN
@@ -50,7 +50,7 @@ BEGIN
 	-- modulo-4-counter
 	PROCESS(modEnable, rst)
 	BEGIN
-		IF rst = '1' THEN
+		IF rst = RSTDEF THEN
 			modCount2 <= "00";
 		ELSIF rising_edge(modEnable) THEN
 			IF modCount2 = "11" THEN
@@ -62,22 +62,26 @@ BEGIN
 	END PROCESS;
 
 	-- 4-to-1-decoder selects which digit of hex4x7 should be changed 
-	PROCESS(modCount2)
+	PROCESS(modCount2, rst)
 	BEGIN
-		-- frequents all 'an' out ports
-		an <= "1111"; -- default output value
-		CASE modCount2 IS
-			WHEN "00" => an(0) <= '0';
-			WHEN "01" => an(1) <= '0';
-			WHEN "10" => an(2) <= '0';
-			WHEN "11" => an(3) <= '0';
-			WHEN OTHERS => an <= "1111";
-		END CASE;
+        IF rst = RSTDEF THEN
+            -- default output value means no digit is selected
+            an <= "1111";
+        ELSE
+            -- frequents all 'an' out ports
+            CASE modCount2 IS
+                WHEN "00" => an(0) <= '0';
+                WHEN "01" => an(1) <= '0';
+                WHEN "10" => an(2) <= '0';
+                WHEN "11" => an(3) <= '0';
+                WHEN OTHERS => an <= "1111";
+            END CASE;
+        END IF;
 	END PROCESS;
 
 	-- 4-to-1-mux selects the input data that will be displayed at the
 	-- current digit
-    -- data content is
+    -- 'data' content is
     -- {SW7, SW6, SW5, SW4, SW3, SW2, SW1, SW0,
     --  SW7, SW6, SW5, SW4, SW3, SW2, SW1, SW0}
 	PROCESS(modCount2, data)
@@ -86,12 +90,13 @@ BEGIN
 			WHEN "00" => currentData <= data(15 DOWNTO 12);
 			WHEN "01" => currentData <= data(11 DOWNTO 8);
 			WHEN "10" => currentData <= data(7 DOWNTO 4);
-			WHEN OTHERS => currentData <= data(3 DOWNTO 0);
+			WHEN "11" => currentData <= data(3 DOWNTO 0);
+            WHEN OTHERS => currentData <= "1111";
 		END CASE;
 	END PROCESS;
 
 	-- 4-to-7-decoder calculates signals for segments from binary number
-    -- segement content is
+    -- 'seg' content is
     -- {G, F, E, D, C, B, A}
     PROCESS(currentData)
     BEGIN
@@ -111,7 +116,16 @@ BEGIN
         END CASE;
     END PROCESS;
 
-	-- 1-aus-4-Multiplexer als selektierte Signalzuweisung
-
+	-- 4-to-1-mux selects if decimal point is displayer at current digit
+    PROCESS(modCount2, dpin)
+    BEGIN
+        CASE modCount2 is
+            WHEN "00" => dp <= dpin(0);
+			WHEN "01" => dp <= dpin(1);
+			WHEN "10" => dp <= dpin(2);
+			WHEN "11" => dp <= dpin(3);
+            WHEN OTHERS => dp <= '1';
+        END CASE;
+    END PROCESS;
 
 END struktur;
