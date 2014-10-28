@@ -26,8 +26,7 @@ ARCHITECTURE struktur OF hex4x7seg IS
 
     -- Zaehler 2
     CONSTANT N2: natural := 4;
-    SIGNAL cnt2: integer RANGE 0 TO N2-1;
-    SIGNAL enable_an: integer RANGE 0 to N2-1 := 0;
+    SIGNAL enable_an: integer RANGE 0 TO N2-1 := 0;
     
     SIGNAL an_tmp: std_logic_vector(3 DOWNTO 0); -- active low
     SIGNAL seg_tmp: std_logic_vector(7 DOWNTO 1); -- active low
@@ -58,21 +57,27 @@ BEGIN
    
    -- Modulo-4-Zaehler als Prozess
 
-    PROCESS (rst, clk_mod) BEGIN
+--  PROCESS (rst, clk_mod) BEGIN
+--      IF rst = RSTDEF THEN
+--          enable_an <= 0;
+--      ELSIF rising_edge(clk_mod) THEN
+--          IF enable_an = N2-1 THEN
+--              enable_an <= 0;
+--          ELSE
+--              enable_an <= enable_an + 1;
+--          END IF;
+--      END IF;
+--  END PROCESS;
+    
+    PROCESS (rst, clk, clk_mod) BEGIN
         IF rst = RSTDEF THEN
-            cnt2 <= 0;
-        ELSIF rising_edge(clk_mod) THEN
-            IF en = '1' THEN
-                IF cnt2 = N2-1 THEN
-                    cnt2 <= 0;
-
-                    IF enable_an = N2-1 THEN
-                        enable_an <= 0;
-                    ELSE
-                        enable_an <= enable_an + 1;
-                    END IF;
+            enable_an <= 0;
+        ELSIF rising_edge(clk) THEN
+            IF clk_mod = '1' THEN
+                IF enable_an = N2-1 THEN
+                    enable_an <= 0;
                 ELSE
-                    cnt2 <= cnt2 + 1;
+                    enable_an <= enable_an + 1;
                 END IF;
             END IF;
         END IF;
@@ -86,7 +91,7 @@ BEGIN
                   "1011" WHEN 2,
                   "0111" WHEN 3;
 
-    an <= an_tmp WHEN en = '1' AND rst /= RSTDEF ELSE (others => '1');
+    an <= an_tmp WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE (others => '1');
 
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
 
@@ -105,7 +110,7 @@ BEGIN
                    "0000110" WHEN "0011",
                    "1001100" WHEN "0100",
                    "0100100" WHEN "0101",
-				   "0100000" WHEN "0110",
+                   "0100000" WHEN "0110",
                    "0001111" WHEN "0111",
                    "0000000" WHEN "1000",
                    "0000100" WHEN "1001",
@@ -117,7 +122,7 @@ BEGIN
                    "0111000" WHEN "1111",
                    "1111111" WHEN OTHERS;
 
-    seg <= seg_tmp WHEN en = '1' AND rst /= RSTDEF ELSE (others => '1');
+    seg <= seg_tmp WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE (others => '1');
 
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
 
@@ -127,6 +132,6 @@ BEGIN
                   NOT dpin(2) WHEN 2, -- DISP2
                   NOT dpin(3) WHEN 3; -- DISP3
 
-    dp <= dp_tmp WHEN en = '1' AND rst /= RSTDEF ELSE '1';
+    dp <= dp_tmp WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE '1';
                   
 END struktur;
