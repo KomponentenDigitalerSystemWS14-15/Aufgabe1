@@ -20,91 +20,71 @@ ARCHITECTURE struktur OF hex4x7seg IS
     -- hier sind benutzerdefinierte Konstanten und Signale einzutragen
 
     -- Zaehler 1
-    CONSTANT N1: natural := 2**14;
-    SIGNAL cnt1: integer RANGE 0 TO N1-1;
-    SIGNAL clk_mod: std_logic;
+    CONSTANT N1: natural := 14;
+    SIGNAL cnt1: std_logic_vector(N1-1 DOWNTO 0);
+    SIGNAL cnt1_en: std_logic;
 
     -- Zaehler 2
-    CONSTANT N2: natural := 4;
-    SIGNAL enable_an: integer RANGE 0 TO N2-1 := 0;
+    CONSTANT N2: natural := 2;
+    SIGNAL cnt2: std_logic_vector(N2-1 DOWNTO 0);
     
     SIGNAL an_tmp: std_logic_vector(3 DOWNTO 0); -- active low
-    SIGNAL seg_tmp: std_logic_vector(7 DOWNTO 1); -- active low
-    SIGNAL dp_tmp: std_logic; -- active low
-    
     SIGNAL sw_tmp: std_logic_vector(3 DOWNTO 0); -- active high
     
 BEGIN
 
-   -- Modulo-2**14-Zaehler als Prozess
-
-    PROCESS (rst, clk) BEGIN
+   -- Modulo 2**14 counter
+    PROCESS (rst, clk)
+       VARIABLE cnt_tmp : std_logic_vector(N1 DOWNTO 0);
+    BEGIN
         IF rst = RSTDEF THEN
-            cnt1 <= 0;
-            clk_mod <= '0';
+            cnt_tmp := (OTHERS => '0');
         ELSIF rising_edge(clk) THEN
-            clk_mod <= '0';
+            cnt_tmp := '0' & cnt1;
             IF en = '1' THEN
-                IF cnt1 = N1-1 THEN
-                    cnt1 <= 0;
-                    clk_mod <= '1';
-                ELSE
-                    cnt1 <= cnt1 + 1;
-                END IF;
+                cnt_tmp := (cnt_tmp + 1);
             END IF;
         END IF;
+        
+        cnt1_en <= cnt_tmp(N1);
+        cnt1 <= cnt_tmp(N1-1 DOWNTO 0);
     END PROCESS;
-   
-   -- Modulo-4-Zaehler als Prozess
-
---  PROCESS (rst, clk_mod) BEGIN
---      IF rst = RSTDEF THEN
---          enable_an <= 0;
---      ELSIF rising_edge(clk_mod) THEN
---          IF enable_an = N2-1 THEN
---              enable_an <= 0;
---          ELSE
---              enable_an <= enable_an + 1;
---          END IF;
---      END IF;
---  END PROCESS;
-    
-    PROCESS (rst, clk, clk_mod) BEGIN
+  
+    -- Modulo 2**2 counter
+    PROCESS (rst, clk) BEGIN
         IF rst = RSTDEF THEN
-            enable_an <= 0;
+            cnt2 <= (OTHERS => '0');
         ELSIF rising_edge(clk) THEN
-            IF clk_mod = '1' THEN
-                IF enable_an = N2-1 THEN
-                    enable_an <= 0;
-                ELSE
-                    enable_an <= enable_an + 1;
-                END IF;
+            IF cnt1_en = '1' THEN
+                cnt2 <= cnt2 + 1;
             END IF;
         END IF;
     END PROCESS;
 
    -- 1-aus-4-Dekoder als selektierte Signalzuweisung
 
-    WITH enable_an SELECT
-        an_tmp <= "1110" WHEN 0,
-                  "1101" WHEN 1,
-                  "1011" WHEN 2,
-                  "0111" WHEN 3;
+    WITH cnt2 SELECT
+        an_tmp <= "1110" WHEN "00",
+                  "1101" WHEN "01",
+                  "1011" WHEN "10",
+                  "0111" WHEN "11",
+                  "1111" WHEN OTHERS;
 
     an <= an_tmp WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE (others => '1');
 
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
 
-    WITH enable_an SELECT
-        sw_tmp <= data( 3 DOWNTO  0) WHEN 0, -- DISP0
-                  data( 7 DOWNTO  4) WHEN 1, -- DISP1
-                  data(11 DOWNTO  8) WHEN 2, -- DISP2
-                  data(15 DOWNTO 12) WHEN 3; -- DISP3
+    WITH cnt2 SELECT
+        sw_tmp <= data( 3 DOWNTO  0) WHEN "00", -- DISP0
+                  data( 7 DOWNTO  4) WHEN "01", -- DISP1
+                  data(11 DOWNTO  8) WHEN "10", -- DISP2
+                  data(15 DOWNTO 12) WHEN "11",
+                  "1111" WHEN OTHERS; -- DISP3
    
    -- 7-aus-4-Dekoder als selektierte Signalzuweisung
    
     WITH sw_tmp SELECT
-        seg_tmp <= "0000001" WHEN "0000",
+        seg <= "0000001" WHEN "0000",
                    "1001111" WHEN "0001",
                    "0010010" WHEN "0010",
                    "0000110" WHEN "0011",
@@ -122,16 +102,13 @@ BEGIN
                    "0111000" WHEN "1111",
                    "1111111" WHEN OTHERS;
 
-    seg <= seg_tmp WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE (others => '1');
-
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
 
-    WITH enable_an SELECT
-        dp_tmp <= NOT dpin(0) WHEN 0, -- DISP0
-                  NOT dpin(1) WHEN 1, -- DISP1
-                  NOT dpin(2) WHEN 2, -- DISP2
-                  NOT dpin(3) WHEN 3; -- DISP3
-
-    dp <= dp_tmp WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE '1';
+    WITH cnt2 SELECT
+        dp <= NOT dpin(0) WHEN "00", -- DISP0
+              NOT dpin(1) WHEN "01", -- DISP1
+              NOT dpin(2) WHEN "10", -- DISP2
+              NOT dpin(3) WHEN "11", -- DISP3
+              '1' WHEN OTHERS; 
                   
 END struktur;
