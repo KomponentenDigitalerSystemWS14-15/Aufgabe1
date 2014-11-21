@@ -17,44 +17,36 @@ END hex4x7seg;
 
 ARCHITECTURE struktur OF hex4x7seg IS
 
-    -- hier sind benutzerdefinierte Konstanten und Signale einzutragen
-
     -- Zaehler 1
     CONSTANT N1 : natural := 14;
     SIGNAL cnt1 : std_logic_vector(N1-1 DOWNTO 0) := (others => '0');
+    SIGNAL cnt_tmp : std_logic_vector(N1 DOWNTO 0) := (others => '0');
     SIGNAL cnt1_en : std_logic;
-
+    
     -- Zaehler 2
     CONSTANT N2 : natural := 2;
     SIGNAL cnt2 : std_logic_vector(N2-1 DOWNTO 0) := (others => '0');
     
-    SIGNAL an_tmp : std_logic_vector(3 DOWNTO 0) := (others => '0'); -- active low
     SIGNAL sw_tmp : std_logic_vector(3 DOWNTO 0) := (others => '0'); -- active high
-    
-	-- TODO: Initialisierung?
 	
 BEGIN
 
     -- Modulo 2**14 counter
     
+    cnt1_en <= cnt_tmp(N1);
+    cnt1 <= cnt_tmp(N1-1 DOWNTO 0);
+    
     PROCESS (rst, clk)
-        -- TODO
-        VARIABLE cnt_tmp : std_logic_vector(N1 DOWNTO 0) := (others => '0');
     BEGIN
         IF rst = RSTDEF THEN
-            cnt_tmp := (OTHERS => '0');
+            cnt_tmp <= (OTHERS => '0');
         ELSIF rising_edge(clk) THEN
             IF swrst = RSTDEF THEN
-                cnt_tmp := (OTHERS => '0');
-            ELSE
-                IF en = '1' THEN
-                    cnt_tmp := '0' & cnt1 + 1;
-                END IF;
+                cnt_tmp <= (OTHERS => '0');
+            ELSIF en = '1' THEN
+                cnt_tmp <= '0' & cnt1 + 1;
             END IF;
         END IF;
-        
-        cnt1_en <= cnt_tmp(N1);
-        cnt1 <= cnt_tmp(N1-1 DOWNTO 0);
     END PROCESS;
   
     -- Modulo 2**2 counter
@@ -75,17 +67,7 @@ BEGIN
 
    -- 1-aus-4-Dekoder als selektierte Signalzuweisung
    
---  WITH cnt2 SELECT
---      an_tmp <= "1110" WHEN "00",
---                "1101" WHEN "01",
---                "1011" WHEN "10",
---                "0111" WHEN "11",
---                "1111" WHEN OTHERS;
-
-	-- TODO
-	an_tmp <= to_stdlogicvector("1110" rol CONV_INTEGER(cnt2));
-	
-    an <= an_tmp WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE (others => '1');
+    an <= to_stdlogicvector("1110" rol CONV_INTEGER(cnt2)) WHEN rst /= RSTDEF AND swrst /= RSTDEF ELSE (others => '1');
 
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
 
@@ -118,14 +100,7 @@ BEGIN
                "1111111" WHEN OTHERS;
 
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
-
---  WITH cnt2 SELECT
---      dp <= NOT dpin(0) WHEN "00", -- DISP0
---            NOT dpin(1) WHEN "01", -- DISP1
---            NOT dpin(2) WHEN "10", -- DISP2
---            NOT dpin(3) WHEN "11", -- DISP3
---            '1' WHEN OTHERS; 
-			  
+	  
 	dp <= NOT dpin(CONV_INTEGER(cnt2));
-                  
+
 END struktur;
