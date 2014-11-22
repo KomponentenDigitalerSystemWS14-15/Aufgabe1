@@ -28,7 +28,7 @@ ARCHITECTURE struktur OF hex4x7seg IS
     SIGNAL cnt2 : std_logic_vector(N2-1 DOWNTO 0) := (others => '0');
     
     SIGNAL sw_tmp : std_logic_vector(3 DOWNTO 0) := (others => '0'); -- active high
-	
+    
 BEGIN
 
     -- Modulo 2**14 counter
@@ -100,7 +100,7 @@ BEGIN
                "1111111" WHEN OTHERS;
 
    -- 1-aus-4-Multiplexer als selektierte Signalzuweisung
-	  
-	dp <= NOT dpin(CONV_INTEGER(cnt2));
+      
+    dp <= NOT dpin(CONV_INTEGER(cnt2));
 
 END struktur;
